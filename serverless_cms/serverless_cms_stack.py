@@ -10,7 +10,7 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     aws_sns_subscriptions as subs,
     aws_lambda as lambda_,
-    aws_apigateway as apigw_
+    aws_apigateway as apigw,
 )
 
 
@@ -41,10 +41,14 @@ class ServerlessCmsStack(Stack):
             runtime=lambda_.Runtime.PYTHON_3_9
         )
 
+        # Deploy ApiGW
+        api = apigw.RestApi(self, "CMS-API")
 
+        post_service_apiResource = api.root.add_resource("post_service_apiResource")
 
-
-
+        #ApiGW and post_service function integration
+        post_content_integration = apigw.LambdaIntegration(post_function)
+        post_service_apiResource.add_method("POST", post_content_integration)
 
 
         # queue = sqs.Queue(
