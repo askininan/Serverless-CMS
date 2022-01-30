@@ -19,8 +19,8 @@ class ServerlessCmsStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Deploy s3 bucket
-        bucket = s3.Bucket(self, "cms-content-bucket")
+
+        ######### Post_Service Stack ######### 
 
         # Deploy dynamoDB table
         table_ddb = dynamodb.Table(
@@ -32,10 +32,6 @@ class ServerlessCmsStack(Stack):
             )
         )
 
-        # Lambda_ddb_role = iam.Role(self, "Lambda_ddb",
-        # assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
-        # )
-
         # Deploy post_service lambda function
         post_function = lambda_.Function(
             self, 
@@ -43,13 +39,10 @@ class ServerlessCmsStack(Stack):
             code=lambda_.Code.from_asset("./serverless_cms/post_service/"),
             handler="post_service.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
-            # role=Lambda_ddb_role
         )
 
+        # Grant permission to post_funtion to write ddb table
         table_ddb.grant(post_function, "dynamodb:PutItem")
-        
-        # Lambda_ddb_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"))
-        # Lambda_ddb_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonDynamoDBFullAccess"))
 
 
         # Deploy ApiGW
@@ -58,9 +51,40 @@ class ServerlessCmsStack(Stack):
         post_service_apiResource = api.root.add_resource("post_service_apiResource")
 
 
-        #Post_service lambda function and APIGW "POST" method integration
+        #Post_service lambda function and APIGW integration
         post_content_integration = apigw.LambdaIntegration(post_function)
         post_service_apiResource.add_method("POST", post_content_integration)
+
+
+
+        ######### File_Service Stack ######### 
+
+        # Deploy s3 bucket
+        bucket = s3.Bucket(self, "cms-content-bucket")
+
+        file_function = lambda_.Function(
+            self, 
+            id="file_service",
+            code=lambda_.Code.from_asset("./serverless_cms/file_service/"),
+            handler="file_service.lambda_handler",
+            runtime=lambda_.Runtime.PYTHON_3_9,
+        )
+
+        bucket.grant_read_write(file_function)
+
+        file_service_apiResource = api.root.add_resource("file_service_apiResource")
+
+        #File_service lambda function and APIGW integration
+        file_content_integration = apigw.LambdaIntegration(file_function)
+        file_service_apiResource.add_method("POST", file_content_integration)
+
+
+
+
+
+
+
+
 
 
         # queue = sqs.Queue(
