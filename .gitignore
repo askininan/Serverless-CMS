@@ -20,4 +20,9 @@ venv.bak/
 # CDK Context & Staging files
 .cdk.staging/
 cdk.out/
+
+# Node Modules in .venv
 node_modules
+
+# Misc
+.DS_Store
