@@ -32,21 +32,33 @@ class ServerlessCmsStack(Stack):
             )
         )
 
+        # Lambda_ddb_role = iam.Role(self, "Lambda_ddb",
+        # assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+        # )
+
         # Deploy post_service lambda function
         post_function = lambda_.Function(
             self, 
             id="post_service",
             code=lambda_.Code.from_asset("./serverless_cms/post_service/"),
             handler="post_service.lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            # role=Lambda_ddb_role
         )
+
+        table_ddb.grant(post_function, "dynamodb:PutItem")
+        
+        # Lambda_ddb_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"))
+        # Lambda_ddb_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonDynamoDBFullAccess"))
+
 
         # Deploy ApiGW
         api = apigw.RestApi(self, "CMS-API")
 
         post_service_apiResource = api.root.add_resource("post_service_apiResource")
 
-        #ApiGW and post_service function integration
+
+        #Post_service lambda function and APIGW "POST" method integration
         post_content_integration = apigw.LambdaIntegration(post_function)
         post_service_apiResource.add_method("POST", post_content_integration)
 
