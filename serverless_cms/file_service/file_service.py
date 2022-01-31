@@ -2,14 +2,15 @@ import base64
 import boto3
 import json
 
-# Create response with Cors
+# Create response with CORS
 response  = {
     'statusCode': 200,
     'headers': {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': 'true'
     },
-    'body': ''
+    "isBase64Encoded": True,
+    'body': '',
 }
 
 def lambda_handler(event, context):
@@ -35,7 +36,7 @@ def lambda_handler(event, context):
     try:
         s3_response = bucket.put_object(Bucket=BucketName, Key=file_name, Body=file_content)   
 
-        response['body'] = 'Your file has been uploaded'
+        response['body'] = 'Your file has been uploaded.'
 
         return response
 
