@@ -1,4 +1,3 @@
-from ast import Lambda
 from constructs import Construct
 from aws_cdk import (
     RemovalPolicy,
@@ -22,6 +21,7 @@ class ServerlessCmsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
 
+
         ######### User_Service Stack ######### 
         vpc = ec2.Vpc(
             self, "CMS_vpc",
@@ -31,7 +31,7 @@ class ServerlessCmsStack(Stack):
         rds.DatabaseInstance(
             self, 
             "CMS_RDS",
-            database_name="user_content_sql_database_2022",
+            instance_identifier="cmsrdsdatabase",
             engine=rds.DatabaseInstanceEngine.mysql(
                 version=rds.MysqlEngineVersion.VER_8_0_23
             ),
@@ -48,8 +48,10 @@ class ServerlessCmsStack(Stack):
             vpc_subnets={
                 "subnet_type": ec2.SubnetType.PUBLIC
             },
-            credentials=rds.Credentials.from_generated_secret("cmsadmin")
+            credentials=rds.Credentials.from_generated_secret("cmsadmin"),          
         )
+
+
 
         ######### Post_Service Stack ######### 
 
