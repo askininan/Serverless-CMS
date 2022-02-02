@@ -9,6 +9,7 @@ messaging queues to connect the services together asynchronously (to be added).
 The whole stack is written in AWS CDK: Python3, and is advised to be deployed at region: `eu-central-1`
 as there are dependencies to that particular region in the code. Or you may replace it to your preferred region in the code.
 
+
 ## Important Prerequsities
 In order to create and connect RDS DB table: After deploying the stack, it is required to edit the inbound rules of the deployed
 security group to allow `port:3306`, Source:`0.0.0.0/0, ::/0` from the console as I wasn't able to figure out the write CDK synthax for it just yet.
@@ -27,14 +28,22 @@ MAC and Linux
 Windows
  * `.venv\Scripts\activate.bat`           Activate your virtualenv     
 
-After activating virtual env:
+After activating virtualenv:
  * `pip install -r requirements.txt`      Install requirements
   
 
 
+Ideal project diagram is visioned as seen below. However, project is still on going as all the resources are not created in code yet, and the diagram may change.
+![alt text](https://github.com/askininan/Serverless-CMS/blob/main/architecture%20diagram/CMS_Diagram.drawio.png)
+
+
+### Parts that are still on-going phase:
+1. Parsing the data from RDS DB through user_service funtion to API Gateway by GET method
+2. Creating GET method for post_service with Cliend ID filter
+3. Creating SQS queues for lambda functions to trigger each other
+
 ## Useful commands
 
- * `cdk ls`          list all stacks in the app
  * `cdk synth`       emits the synthesized CloudFormation template
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
