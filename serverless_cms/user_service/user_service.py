@@ -37,15 +37,14 @@ print(data)
 
 
 
-def lambda_handler():
+def lambda_handler(event, context):
 
-    cursor.execute('Select * from ')
+    sql="""use Characters"""
+    cursor.execute(sql)
     sql= """select * from Chars"""
     cursor.execute(sql)
 
     rows = cursor.fetchall()
 
     for row in rows:
-        print("{0} {1} {2}".format(row[0], row[1], row[2]))
-
-lambda_handler()
+        print("{0} {1} {2} {3}".format(row[0], row[1], row[2], row[3]))

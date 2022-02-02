@@ -85,7 +85,7 @@ class ServerlessCmsStack(Stack):
         # )
 
 
-        rds.DatabaseInstance(
+        rds_db=rds.DatabaseInstance(
             self, 
             "CMS_RDS",
             instance_identifier="cmsrdsdatabase2022",
@@ -111,13 +111,20 @@ class ServerlessCmsStack(Stack):
             )
         )
 
+        vpc_exec_role = iam.Role(self, "VPC Execution Role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
         user_function = lambda_.Function(
             self, 
             id="user_service",
-            code=lambda_.Code.from_asset("./serverless_cms/user_service/"),
+            code=lambda_.Code.from_asset("./serverless_cms/user_service/user_service_zip"),
             handler="user_service.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
+            role=vpc_exec_role
         )
+
+        # Grant permission to user_funtion to read-write onto RDS
+        vpc_exec_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaVPCAccessExecutionRole"))
 
         # Add a new resource to our existing APIGW
         user_service_apiResource = api.root.add_resource("user_service_apiResource")

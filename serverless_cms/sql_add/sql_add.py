@@ -41,13 +41,14 @@ cursor.connection.commit()
 
 
 ###### CREATE DATABASE TABLE ###### 
+
 sql="""use Characters"""
 cursor.execute(sql)
-sql = """DROP TABLE IF EXISTS Chars"""
+sql="""DROP TABLE IF EXISTS Chars"""
 cursor.execute(sql)
+cursor.connection.commit()
 
-
-# Insert Chars table schema
+# Insert Chars table schema and create table
 sql="""use Characters"""
 cursor.execute(sql)
 
@@ -87,9 +88,11 @@ cursor.execute(sql)
 
 sql="""insert into Chars(name,surname,location) values ('%s','%s','%s')"""%('Frodo','Baggins','Shire')
 cursor.execute(sql)
-
+cursor.connection.commit()
 
 # Print all data in Chars table
+sql="""use Characters"""
+cursor.execute(sql)
 sql= """select * from Chars"""
 cursor.execute(sql)
 allchars=cursor.fetchall()
