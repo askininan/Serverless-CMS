@@ -1,17 +1,20 @@
+import json
 from constructs import Construct
 from aws_cdk import (
     RemovalPolicy,
+    SecretValue,
     Stack,
     aws_iam as iam,
     aws_sqs as sqs,
     aws_sns as sns,
+    aws_sns_subscriptions as subs,
     aws_rds as rds,
     aws_s3 as s3,
     aws_dynamodb as dynamodb,
-    aws_sns_subscriptions as subs,
     aws_lambda as lambda_,
     aws_apigateway as apigw,
-    aws_ec2 as ec2
+    aws_ec2 as ec2,
+    aws_secretsmanager as secretsmanager
 )
 
 
@@ -23,15 +26,33 @@ class ServerlessCmsStack(Stack):
 
 
         ######### User_Service Stack ######### 
+
+        # Deploy custom VPC
         vpc = ec2.Vpc(
             self, "CMS_vpc",
             cidr="10.0.0.0/16"
         )
 
+        ##### ERROR: jsii.errors.JSIIError: Expected array type, got {"$jsii.byref":"aws-cdk-lib.aws_ec2.SecurityGroup@10003"} #####
+
+        # Deploy custom security group that allows all traffic inbound
+        # securitygroup = ec2.SecurityGroup(
+        #     self,
+        #     id="sg1",
+        #     vpc=vpc,
+        #     allow_all_outbound=True,
+        #     description="CDK manually created Security Group"
+        # )
+        # securitygroup.add_ingress_rule(
+        #     peer=ec2.Peer.any_ipv4(),
+        #     connection=ec2.Port.all_traffic(),
+        # )
+
+
         rds.DatabaseInstance(
             self, 
             "CMS_RDS",
-            instance_identifier="cmsrdsdatabase",
+            instance_identifier="cmsrdsdatabase2022",
             engine=rds.DatabaseInstanceEngine.mysql(
                 version=rds.MysqlEngineVersion.VER_8_0_23
             ),
@@ -48,9 +69,11 @@ class ServerlessCmsStack(Stack):
             vpc_subnets={
                 "subnet_type": ec2.SubnetType.PUBLIC
             },
-            credentials=rds.Credentials.from_generated_secret("cmsadmin"),          
+            # security_groups=securitygroup,
+            credentials=rds.Credentials.from_generated_secret("admin",
+                secret_name="rdsdatabasesecret"
+            )
         )
-
 
 
         ######### Post_Service Stack ######### 
