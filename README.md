@@ -1,58 +1,36 @@
 
-# Welcome to your CDK Python project!
+# Serverless CMS Project with AWS CDK
 
-You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`serverless_cms_stack`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+The content demonstrates a CDK app with an instance of a stack (`serverless_cms_stack`)
+which contains an API Gateway, three Lambda functions (file_service, user_service and post_service),
+an RDS database table with preconfigured example data, an S3 bucket and a DynamoDB table. Also two SQS
+messaging queues to connect the services together asynchronously (to be added).
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+The whole stack is written in AWS CDK: Python3, and is advised to be deployed at region: `eu-central-1`
+as there are dependencies to that particular region in the code. Or you may replace it to your preferred region in the code.
 
-This project is set up like a standard Python project.  The initialization process also creates
-a virtualenv within this project, stored under the .venv directory.  To create the virtualenv
-it assumes that there is a `python3` executable in your path with access to the `venv` package.
-If for any reason the automatic creation of the virtualenv fails, you can create the virtualenv
-manually once the init process completes.
+## Important Prerequsities
+In order to create and connect RDS DB table: After deploying the stack, it is required to edit the inbound rules of the deployed
+security group to allow `port:3306`, Source:`0.0.0.0/0, ::/0` from the console as I wasn't able to figure out the write CDK synthax for it just yet.
+Note: Code snippet is commented out for further development.
 
-To manually create a virtualenv on MacOS and Linux:
+The example data table can be inserted by executing `sql_add.py` which connects RDS database automatically with Secrets Manager authentication.
 
-```
-$ python3 -m venv .venv
-```
+To create the virtualenv it assumes that there is a `python3` executable in your path with access to the `venv` package.
+If for any reason the automatic creation of the virtualenv fails, you can create the virtualenv manually once the init process completes.
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+## Building Steps
+MAC and Linux
+ * `python3 -m venv .venv`                Manually create a virtualenv
+ * `source .venv/bin/activate`            Activate your virtualenv
 
-```
-$ source .venv/bin/activate
-```
+Windows
+ * `.venv\Scripts\activate.bat`           Activate your virtualenv     
 
-If you are a Windows platform, you would activate the virtualenv like this:
+After activating virtual env:
+ * `pip install -r requirements.txt`      Install requirements
+  
 
-```
-% .venv\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
-```
-
-At this point you can now synthesize the CloudFormation template for this code.
-
-```
-$ cdk synth
-```
-
-You can now begin exploring the source code, contained in the hello directory.
-There is also a very trivial test included that can be run like this:
-
-```
-$ pytest
-```
-
-To add additional dependencies, for example other CDK libraries, just add to
-your requirements.txt file and rerun the `pip install -r requirements.txt`
-command.
 
 ## Useful commands
 
@@ -62,4 +40,3 @@ command.
  * `cdk diff`        compare deployed stack with current state
  * `cdk docs`        open CDK documentation
 
-Enjoy!

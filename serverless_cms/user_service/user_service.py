@@ -2,6 +2,7 @@ import pymysql
 import boto3
 import json
 
+
 region = "eu-central-1"
 db_instance = "cmsrdsdatabase2022"
 
@@ -11,7 +12,7 @@ source = boto3.client("rds", region_name=region)
 
 # Get generated password from Secrets Manager      
 secret_pass = client.get_secret_value(
-    SecretId="rdsdatabasesecret"
+    SecretId="databasesecret01"
 )
 database_secrets = json.loads(secret_pass["SecretString"])
 cms_password=database_secrets["password"]
@@ -30,13 +31,6 @@ connection = pymysql.connect(host=rds_host,
 
 cursor = connection.cursor()
 
-# Test connection by fetching db instance version
-cursor.execute("select version()")
-data=cursor.fetchone()
-print(data)
-
-
-
 def lambda_handler(event, context):
 
     sql="""use Characters"""
@@ -48,3 +42,4 @@ def lambda_handler(event, context):
 
     for row in rows:
         print("{0} {1} {2} {3}".format(row[0], row[1], row[2], row[3]))
+

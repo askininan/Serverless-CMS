@@ -113,9 +113,6 @@ class ServerlessCmsStack(Stack):
         )
 
 
-
-
-
         # Creating a policy for lambda role to access Secret's Manager secrets
         policy_document = {
             "Version": "2012-10-17",
@@ -132,6 +129,7 @@ class ServerlessCmsStack(Stack):
         secrets_man_policy = iam.Policy(self, "Secrets Manager Access Policy",
         document=custom_policy_document
         )
+
 
         # Create a role for lambda and attach secrets policy to it
         vpc_exec_role = iam.Role(self, "VPC Execution Role",
@@ -155,9 +153,6 @@ class ServerlessCmsStack(Stack):
             role=vpc_exec_role
         )
         
-
-
-       
 
         # Add a new resource to our existing APIGW
         user_service_apiResource = api.root.add_resource("user_service_apiResource")
