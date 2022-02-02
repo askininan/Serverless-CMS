@@ -1,7 +1,10 @@
 # CDK 
 aws-cdk-lib==2.9.0
 constructs>=10.0.0,<11.0.0
+
+# Python Modules
 pymysql
 pytest==6.2.5
 boto3
+
 json
