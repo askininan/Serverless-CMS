@@ -1,4 +1,5 @@
 import json
+import aws_cdk
 from constructs import Construct
 from aws_cdk import (
     RemovalPolicy,
@@ -14,7 +15,7 @@ from aws_cdk import (
     aws_lambda as lambda_,
     aws_apigateway as apigw,
     aws_ec2 as ec2,
-    aws_secretsmanager as secretsmanager
+    aws_secretsmanager as secretsmanager,
 )
 
 
@@ -111,20 +112,52 @@ class ServerlessCmsStack(Stack):
             )
         )
 
+
+
+
+
+        # Creating a policy for lambda role to access Secret's Manager secrets
+        policy_document = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": ["*"],
+                    "Resource": ["*"]
+                }
+            ]
+        }
+        custom_policy_document = iam.PolicyDocument.from_json(policy_document)
+
+        secrets_man_policy = iam.Policy(self, "Secrets Manager Access Policy",
+        document=custom_policy_document
+        )
+
+        # Create a role for lambda and attach secrets policy to it
         vpc_exec_role = iam.Role(self, "VPC Execution Role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
-)
+        )   
+        secrets_man_policy.attach_to_role(vpc_exec_role)
+
+         # Attach required AWS Managed Policies for user_service lambda functions to vpc_exec_role
+        vpc_exec_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaVPCAccessExecutionRole"))
+        vpc_exec_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"))
+
+
+        # Deploy user_service lambda function
         user_function = lambda_.Function(
             self, 
             id="user_service",
-            code=lambda_.Code.from_asset("./serverless_cms/user_service/user_service_zip"),
+            code=lambda_.Code.from_asset("./serverless_cms/user_service/user_service.zip"),
+            timeout=aws_cdk.Duration.seconds(300),
             handler="user_service.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
             role=vpc_exec_role
         )
+        
 
-        # Grant permission to user_funtion to read-write onto RDS
-        vpc_exec_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaVPCAccessExecutionRole"))
+
+       
 
         # Add a new resource to our existing APIGW
         user_service_apiResource = api.root.add_resource("user_service_apiResource")
