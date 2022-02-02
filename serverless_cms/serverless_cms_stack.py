@@ -24,6 +24,42 @@ class ServerlessCmsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
 
+        ######### Post_Service Stack ######### 
+
+        # Deploy dynamoDB table
+        table_ddb = dynamodb.Table(
+            self, 
+            id="content_table",
+            partition_key=dynamodb.Attribute(
+                name="id", 
+                type=dynamodb.AttributeType.STRING
+            )
+        )
+
+        # Deploy post_service lambda function
+        post_function = lambda_.Function(
+            self, 
+            id="post_service",
+            code=lambda_.Code.from_asset("./serverless_cms/post_service/"),
+            handler="post_service.lambda_handler",
+            runtime=lambda_.Runtime.PYTHON_3_9,
+        )
+
+        # Grant permission to post_funtion to write ddb table
+        table_ddb.grant(post_function, "dynamodb:PutItem")
+
+
+        # Deploy ApiGW
+        api = apigw.RestApi(self, "CMS-API")
+
+        post_service_apiResource = api.root.add_resource("post_service_apiResource")
+
+
+        #Post_service lambda function and APIGW integration
+        post_content_integration = apigw.LambdaIntegration(post_function)
+        post_service_apiResource.add_method("POST", post_content_integration)
+
+
 
         ######### User_Service Stack ######### 
 
@@ -75,41 +111,20 @@ class ServerlessCmsStack(Stack):
             )
         )
 
-
-        ######### Post_Service Stack ######### 
-
-        # Deploy dynamoDB table
-        table_ddb = dynamodb.Table(
+        user_function = lambda_.Function(
             self, 
-            id="content_table",
-            partition_key=dynamodb.Attribute(
-                name="id", 
-                type=dynamodb.AttributeType.STRING
-            )
-        )
-
-        # Deploy post_service lambda function
-        post_function = lambda_.Function(
-            self, 
-            id="post_service",
-            code=lambda_.Code.from_asset("./serverless_cms/post_service/"),
-            handler="post_service.lambda_handler",
+            id="user_service",
+            code=lambda_.Code.from_asset("./serverless_cms/user_service/"),
+            handler="user_service.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
         )
 
-        # Grant permission to post_funtion to write ddb table
-        table_ddb.grant(post_function, "dynamodb:PutItem")
+        # Add a new resource to our existing APIGW
+        user_service_apiResource = api.root.add_resource("user_service_apiResource")
 
-
-        # Deploy ApiGW
-        api = apigw.RestApi(self, "CMS-API")
-
-        post_service_apiResource = api.root.add_resource("post_service_apiResource")
-
-
-        #Post_service lambda function and APIGW integration
-        post_content_integration = apigw.LambdaIntegration(post_function)
-        post_service_apiResource.add_method("POST", post_content_integration)
+        # File_service lambda function and APIGW integration
+        user_content_integration = apigw.LambdaIntegration(user_function)
+        user_service_apiResource.add_method("GET", user_content_integration)
 
 
 

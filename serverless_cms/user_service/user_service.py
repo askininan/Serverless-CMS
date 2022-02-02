@@ -1,32 +1,31 @@
 import pymysql
-import pymysql
 import boto3
 import json
 
-# region = "eu-central-1"
-# db_instance = "cmsrdsdatabase"
+region = "eu-central-1"
+db_instance = "cmsrdsdatabase2022"
 
 
-# client = boto3.client("secretsmanager")
-# source = boto3.client("rds", region_name=region)
+client = boto3.client("secretsmanager")
+source = boto3.client("rds", region_name=region)
 
-# # Get generated password from Secrets Manager      
-# secret_pass = client.get_secret_value(
-#     SecretId="rds-admin-secret_2022"
-# )
-# database_secrets = json.loads(secret_pass["SecretString"])
-# cms_password=database_secrets["password"]
+# Get generated password from Secrets Manager      
+secret_pass = client.get_secret_value(
+    SecretId="rdsdatabasesecret"
+)
+database_secrets = json.loads(secret_pass["SecretString"])
+cms_password=database_secrets["password"]
 
 
-# # Get RDS instance endpoint
-# instances = source.describe_db_instances(DBInstanceIdentifier=db_instance)
-# rds_host = instances.get("DBInstances")[0].get("Endpoint").get("Address")
+# Get RDS instance endpoint
+instances = source.describe_db_instances(DBInstanceIdentifier=db_instance)
+rds_host = instances.get("DBInstances")[0].get("Endpoint").get("Address")
 
 
 # Connect to RDS db instance
-connection = pymysql.connect(host='database-1.cvpqz3vck4gl.eu-central-1.rds.amazonaws.com',
-                             user="admin",
-                             password='askinan555',
+connection = pymysql.connect(host=rds_host,
+                             user='admin',
+                             password=cms_password,
                             )
 
 cursor = connection.cursor()

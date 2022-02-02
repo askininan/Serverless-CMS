@@ -3,7 +3,7 @@ import boto3
 import json
 
 region = "eu-central-1"
-db_instance = "cmsrdsdatabase"
+db_instance = "cmsrdsdatabase2022"
 
 
 client = boto3.client("secretsmanager")
