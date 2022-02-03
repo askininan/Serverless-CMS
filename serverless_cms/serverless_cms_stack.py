@@ -18,8 +18,8 @@ from aws_cdk import (
     aws_secretsmanager as secretsmanager,
 )
 
-env_region = aws_cdk.Environment(region = "eu-west-1")
-class ServerlessCmsStack(Stack, env = env_region):
+
+class ServerlessCmsStack(Stack, ):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -31,6 +31,7 @@ class ServerlessCmsStack(Stack, env = env_region):
         table_ddb = dynamodb.Table(
             self, 
             id="content_table",
+            removal_policy=RemovalPolicy.DESTROY,
             partition_key=dynamodb.Attribute(
                 name="id", 
                 type=dynamodb.AttributeType.STRING
@@ -51,10 +52,30 @@ class ServerlessCmsStack(Stack, env = env_region):
 
 
         # Deploy ApiGW
-        api = apigw.RestApi(self, "CMS-API")
+        api = apigw.RestApi(self, 
+            "CMS-API",
+            binary_media_types=["*/*"]  
+        )
+        # Create APIGW Usage Plan
+        api_usage_plan = api.add_usage_plan("UsagePlan",
+            name="APIplan",
+            throttle=apigw.ThrottleSettings(
+                rate_limit=100,
+                burst_limit=20
+            )
+        )
 
+        # # Create Api key
+        # api_key = api.add_api_key("ApiKey",
+        #     api_key_name="myApiKey1",
+        #     value="1234567890abcdefghij"
+        # )
+        
+        # # Add Api key to usage plan
+        # api_usage_plan.add_api_key(api_key)
+
+        #Create post resource in APIGW
         post_service_apiResource = api.root.add_resource("post_service_apiResource")
-
 
         #Post_service lambda function and APIGW integration
         post_content_integration = apigw.LambdaIntegration(post_function)
@@ -166,7 +187,10 @@ class ServerlessCmsStack(Stack, env = env_region):
         ######### File_Service Stack ######### 
 
         # Deploy s3 bucket
-        bucket = s3.Bucket(self, "cms-content-bucket")
+        bucket = s3.Bucket(self, 
+            "cms-content-bucket",
+            removal_policy=RemovalPolicy.RETAIN,
+        )
 
         # Deploy file_service lambda function
         file_function = lambda_.Function(
@@ -181,7 +205,9 @@ class ServerlessCmsStack(Stack, env = env_region):
         bucket.grant_read_write(file_function)
 
         # Add a new resource to our existing APIGW
-        file_service_apiResource = api.root.add_resource("file_service_apiResource")
+        file_service_apiResource = api.root.add_resource("file_service_apiResource",
+            
+        )
 
         # File_service lambda function and APIGW integration
         file_content_integration = apigw.LambdaIntegration(file_function)

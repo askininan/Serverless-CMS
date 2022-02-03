@@ -6,7 +6,7 @@ which contains an API Gateway, three Lambda functions (file_service, user_servic
 an RDS database table with preconfigured example data, an S3 bucket and a DynamoDB table. Also two SQS
 messaging queues to connect the services together asynchronously (to be added).
 
-Stack-code: serverless_cms/serverless_cms_stack.py
+Stack-file: serverless_cms/serverless_cms_stack.py
 ## Building Steps
 
 * `npm install -g aws-cdk`                install aws-cdk
@@ -22,7 +22,7 @@ After activating virtualenv:
 
 Deploy
 
-The is advised to be deployed at region: `eu-central-1` as there are dependencies to that particular region in the code. Or you may replace it to your preferred region in the code.
+The stack is advised to be deployed at region: `eu-central-1` as there are dependencies to that particular region in the code. Or you may replace it to your preferred region in the code.
 
  * `cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1`       bootstrap cdk with your account and a specific region
  * `cdk synth`       emits the synthesized CloudFormation template
@@ -35,6 +35,8 @@ security group to allow `port:3306`, Source:`0.0.0.0/0, ::/0` from the console a
 Note: Code snippet is commented out for further development.
 
 The example data table can be inserted by executing `sql_add.py` which connects RDS database with Secrets Manager authentication.
+
+S3 and DynamoDB table names need to be changed with the deployed resource names in order to test file_service and post_service.
   
 ## Project Diagram
 Ideal project diagram is visioned as seen below. However, project is still on going as all the resources are not created in code yet, and the diagram may change.
