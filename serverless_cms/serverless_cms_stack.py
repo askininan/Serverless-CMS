@@ -18,8 +18,8 @@ from aws_cdk import (
     aws_secretsmanager as secretsmanager,
 )
 
-
-class ServerlessCmsStack(Stack):
+env_region = aws_cdk.Environment(region = "eu-west-1")
+class ServerlessCmsStack(Stack, env = env_region):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -89,7 +89,7 @@ class ServerlessCmsStack(Stack):
         rds_db=rds.DatabaseInstance(
             self, 
             "CMS_RDS",
-            instance_identifier="cmsrdsdatabase2022",
+            instance_identifier="RDSDB01",
             engine=rds.DatabaseInstanceEngine.mysql(
                 version=rds.MysqlEngineVersion.VER_8_0_23
             ),
@@ -108,7 +108,7 @@ class ServerlessCmsStack(Stack):
             },
             # security_groups=securitygroup,
             credentials=rds.Credentials.from_generated_secret("admin",
-                secret_name="rdsdatabasesecret"
+                secret_name="RDSSECRET01"
             )
         )
 
